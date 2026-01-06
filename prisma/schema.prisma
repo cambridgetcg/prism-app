@@ -1,0 +1,308 @@
+// PRISM Price Index App - Prisma Schema
+// Read-only access to price data tables
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CARD PRICES (Primary price data from trading-card-pricer Lambda)
+// ============================================================================
+
+// Main card prices table - updated twice daily
+model CardPriceV2 {
+  cardId             String    @id @map("card_id") @db.VarChar(100)
+
+  // Card metadata
+  game               String    @default("onepiece") @db.VarChar(50)
+  name               String    @db.VarChar(500)
+  releaseSet         String?   @map("release_set") @db.VarChar(20)
+  fullCardNumber     String?   @map("full_card_number") @db.VarChar(30)
+  setCode            String?   @map("set_code") @db.VarChar(20)
+  cardNumber         String?   @map("card_number") @db.VarChar(20)
+  variantType        String?   @map("variant_type") @db.VarChar(50)
+  rarity             String?   @db.VarChar(50)
+  language           String?   @default("EN") @db.VarChar(10)
+
+  // OPTCG API prices (TCGplayer source)
+  optcgTcgplayerUsd  Decimal?  @map("optcg_tcgplayer_usd") @db.Decimal(10, 2)
+  optcgTcgplayerGbp  Decimal?  @map("optcg_tcgplayer_gbp") @db.Decimal(10, 2)
+  optcgUpdatedAt     DateTime? @map("optcg_updated_at") @db.Timestamptz
+
+  // Limitless prices (CardMarket source)
+  limitlessCardmarketEur Decimal? @map("limitless_cardmarket_eur") @db.Decimal(10, 2)
+  limitlessCardmarketGbp Decimal? @map("limitless_cardmarket_gbp") @db.Decimal(10, 2)
+  limitlessUpdatedAt     DateTime? @map("limitless_updated_at") @db.Timestamptz
+
+  // JustTCG prices (TCGplayer source)
+  justtcgTcgplayerUsd Decimal?  @map("justtcg_tcgplayer_usd") @db.Decimal(10, 2)
+  justtcgTcgplayerGbp Decimal?  @map("justtcg_tcgplayer_gbp") @db.Decimal(10, 2)
+  justtcgUpdatedAt    DateTime? @map("justtcg_updated_at") @db.Timestamptz
+
+  // Best/computed prices
+  bestPriceGbp       Decimal?  @map("best_price_gbp") @db.Decimal(10, 2)
+  tradeinPriceGbp    Decimal?  @map("tradein_price_gbp") @db.Decimal(10, 2)
+
+  // Exchange rates
+  usdToGbpRate       Decimal?  @map("usd_to_gbp_rate") @db.Decimal(10, 6)
+  eurToGbpRate       Decimal?  @map("eur_to_gbp_rate") @db.Decimal(10, 6)
+
+  // Shopify integration
+  shopifyProductId   String?   @map("shopify_product_id") @db.VarChar(255)
+
+  // Card image
+  imageUrl           String?   @map("image_url") @db.VarChar(500)
+
+  // Timestamps
+  createdAt          DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  lastUpdated        DateTime? @default(now()) @map("last_updated") @db.Timestamptz
+
+  @@index([game], map: "idx_card_prices_v2_game")
+  @@index([releaseSet], map: "idx_card_prices_v2_release_set")
+  @@index([fullCardNumber], map: "idx_card_prices_v2_full_card_number")
+  @@index([setCode], map: "idx_card_prices_v2_set_code")
+  @@index([variantType], map: "idx_card_prices_v2_variant")
+  @@index([bestPriceGbp], map: "idx_card_prices_v2_best_price")
+  @@index([tradeinPriceGbp], map: "idx_card_prices_v2_tradein")
+  @@index([name], map: "idx_card_prices_v2_name")
+  @@index([shopifyProductId], map: "idx_card_prices_v2_shopify")
+  @@index([language], map: "idx_card_prices_v2_language")
+  @@map("card_prices_v2")
+}
+
+// Legacy table - for backwards compatibility
+model ExternalCardPrice {
+  cardId             String    @id @map("card_id") @db.VarChar(255)
+  name               String    @db.VarChar(500)
+  marketPrice        Decimal   @map("market_price") @db.Decimal(10, 2)
+  tradeinPrice       Decimal   @map("tradein_price") @db.Decimal(10, 2)
+  currency           String    @db.VarChar(10)
+  source             String    @db.VarChar(50)
+  game               String    @db.VarChar(50)
+  shopifyProductId   String?   @map("shopify_product_id") @db.VarChar(255)
+  lastUpdated        DateTime? @default(now()) @map("last_updated") @db.Timestamptz
+  createdAt          DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  isAlternateArt     Boolean?  @default(false) @map("is_alternate_art")
+  variantType        String?   @map("variant_type") @db.VarChar(50)
+  rarity             String?   @db.VarChar(50)
+  printing           String?   @default("Normal") @db.VarChar(50)
+  marketPriceGbp     Decimal?  @map("market_price_gbp") @db.Decimal(10, 2)
+  tradeinPriceGbp    Decimal?  @map("tradein_price_gbp") @db.Decimal(10, 2)
+  exchangeRate       Decimal?  @map("exchange_rate") @db.Decimal(10, 6)
+  tcgplayerPriceUsd  Decimal?  @map("tcgplayer_price_usd") @db.Decimal(10, 2)
+  tcgplayerPriceGbp  Decimal?  @map("tcgplayer_price_gbp") @db.Decimal(10, 2)
+  cardmarketPriceEur Decimal?  @map("cardmarket_price_eur") @db.Decimal(10, 2)
+  cardmarketPriceGbp Decimal?  @map("cardmarket_price_gbp") @db.Decimal(10, 2)
+
+  @@index([game], map: "idx_card_prices_game")
+  @@index([source], map: "idx_card_prices_source")
+  @@index([lastUpdated], map: "idx_card_prices_last_updated")
+  @@map("card_prices")
+}
+
+// ============================================================================
+// PRICE INDEX SYSTEM (PRISM)
+// ============================================================================
+
+// Daily snapshot of index values
+model PriceIndexSnapshot {
+  id            String   @id @default(cuid())
+
+  indexType     String   @map("index_type")  // GAME, SET, RARITY, TOP_100, LANGUAGE, VOLATILITY
+  indexKey      String   @map("index_key")   // "onepiece", "OP01", "SR", "EN", etc.
+
+  // Core metrics
+  value         Decimal  @db.Decimal(12, 4)
+  change24h     Decimal  @default(0) @map("change_24h") @db.Decimal(8, 4)
+  change7d      Decimal  @default(0) @map("change_7d") @db.Decimal(8, 4)
+  change30d     Decimal  @default(0) @map("change_30d") @db.Decimal(8, 4)
+
+  // Volume metrics
+  cardCount     Int      @map("card_count")
+  totalMarketCap Decimal @map("total_market_cap") @db.Decimal(14, 2)
+  avgPrice      Decimal  @map("avg_price") @db.Decimal(10, 2)
+
+  // Volatility metrics
+  volatility    Decimal  @default(0) @db.Decimal(8, 4)
+  highPrice     Decimal  @map("high_price") @db.Decimal(10, 2)
+  lowPrice      Decimal  @map("low_price") @db.Decimal(10, 2)
+
+  // Timestamps
+  snapshotDate  DateTime @map("snapshot_date") @db.Date
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([indexType, indexKey, snapshotDate])
+  @@index([indexType, snapshotDate], map: "idx_price_index_type_date")
+  @@index([indexKey], map: "idx_price_index_key")
+  @@map("price_index_snapshots")
+}
+
+// Card-level price history
+model CardPriceHistory {
+  id           String   @id @default(cuid())
+
+  cardId       String   @map("card_id")
+  game         String   @default("onepiece")
+  setCode      String?  @map("set_code")
+
+  // Price snapshot
+  priceJpy     Decimal? @map("price_jpy") @db.Decimal(10, 0)
+  priceGbp     Decimal  @map("price_gbp") @db.Decimal(10, 2)
+  exchangeRate Decimal? @map("exchange_rate") @db.Decimal(10, 8)
+  sourceUsed   String   @map("source_used")
+
+  // Change tracking
+  change       Decimal  @default(0) @db.Decimal(8, 4)
+  changeJpy    Decimal? @map("change_jpy") @db.Decimal(8, 4)
+  changeFx     Decimal? @map("change_fx") @db.Decimal(8, 4)
+
+  snapshotDate DateTime @map("snapshot_date") @db.Date
+
+  @@unique([cardId, snapshotDate])
+  @@index([cardId, snapshotDate], map: "idx_card_history_id_date")
+  @@index([game, snapshotDate], map: "idx_card_history_game_date")
+  @@index([setCode, snapshotDate], map: "idx_card_history_set_date")
+  @@index([priceJpy], map: "idx_card_history_jpy")
+  @@map("card_price_history")
+}
+
+// Exchange rate history
+model ExchangeRateHistory {
+  id         String   @id @default(cuid())
+
+  date       DateTime @unique @db.Date
+
+  jpyToGbp   Decimal  @map("jpy_to_gbp") @db.Decimal(10, 8)
+  gbpToJpy   Decimal  @map("gbp_to_jpy") @db.Decimal(10, 4)
+  change24h  Decimal? @map("change_24h") @db.Decimal(8, 4)
+
+  source     String   @default("s3_pricefeed")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([date], map: "idx_exchange_rate_date")
+  @@map("exchange_rate_history")
+}
+
+// Price correlations for network visualization
+model PriceCorrelation {
+  id            String   @id @default(cuid())
+
+  entityA       String   @map("entity_a")
+  entityB       String   @map("entity_b")
+  entityType    String   @default("card") @map("entity_type")
+
+  correlation   Decimal  @db.Decimal(5, 4)
+  sampleSize    Int      @map("sample_size")
+  pValue        Decimal? @map("p_value") @db.Decimal(8, 6)
+
+  calculatedAt  DateTime @default(now()) @map("calculated_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([entityA, entityB])
+  @@index([entityA], map: "idx_correlation_entity_a")
+  @@index([entityB], map: "idx_correlation_entity_b")
+  @@index([correlation], map: "idx_correlation_value")
+  @@map("price_correlations")
+}
+
+// Multi-source price tracking
+model PriceSource {
+  id              String   @id @default(cuid())
+
+  cardId          String   @map("card_id")
+  game            String   @default("onepiece")
+  source          String
+  platformId      String?  @map("platform_id")
+
+  priceJpy        Decimal? @map("price_jpy") @db.Decimal(10, 2)
+  priceGbp        Decimal? @map("price_gbp") @db.Decimal(10, 2)
+  costGbp         Decimal? @map("cost_gbp") @db.Decimal(10, 2)
+  sellingPriceGbp Decimal? @map("selling_price_gbp") @db.Decimal(10, 2)
+  exchangeRate    Decimal? @map("exchange_rate") @db.Decimal(10, 5)
+
+  lastUpdated     DateTime @default(now()) @map("last_updated") @db.Timestamptz
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([cardId, source])
+  @@index([cardId], map: "idx_price_sources_card")
+  @@index([source], map: "idx_price_sources_source")
+  @@index([game], map: "idx_price_sources_game")
+  @@map("price_sources")
+}
+
+// ============================================================================
+// TCG-100 INDEX SYSTEM
+// ============================================================================
+
+// Current index constituents
+model IndexConstituent {
+  id              String   @id @default(cuid())
+
+  cardId          String   @map("card_id")
+  game            String   @default("onepiece")
+
+  rank            Int
+  previousRank    Int?     @map("previous_rank")
+
+  rawWeight       Decimal  @map("raw_weight") @db.Decimal(10, 8)
+  cappedWeight    Decimal  @map("capped_weight") @db.Decimal(10, 8)
+
+  marketCap       Decimal  @map("market_cap") @db.Decimal(14, 2)
+  priceGbp        Decimal  @map("price_gbp") @db.Decimal(10, 2)
+
+  daysInIndex     Int      @default(0) @map("days_in_index")
+  inBufferZone    Boolean  @default(false) @map("in_buffer_zone")
+
+  isActive        Boolean  @default(true) @map("is_active")
+
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz
+
+  @@unique([game, cardId, isActive])
+  @@index([game, isActive], map: "idx_constituent_game_active")
+  @@index([game, rank], map: "idx_constituent_rank")
+  @@index([cardId], map: "idx_constituent_card")
+  @@map("index_constituents")
+}
+
+// Reconstitution history
+model IndexReconstitution {
+  id                    String   @id @default(cuid())
+
+  game                  String   @default("onepiece")
+  additions             String[]
+  removals              String[]
+  retained              Int
+  bufferZoneProtected   Int      @map("buffer_zone_protected")
+
+  reconstitutionDate    DateTime @map("reconstitution_date") @db.Date
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([game, reconstitutionDate], map: "idx_reconstitution_game_date")
+  @@map("index_reconstitutions")
+}
+
+// Weight history
+model IndexWeightHistory {
+  id              String   @id @default(cuid())
+
+  cardId          String   @map("card_id")
+  game            String   @default("onepiece")
+
+  rank            Int
+  rawWeight       Decimal  @map("raw_weight") @db.Decimal(10, 8)
+  cappedWeight    Decimal  @map("capped_weight") @db.Decimal(10, 8)
+  priceGbp        Decimal  @map("price_gbp") @db.Decimal(10, 2)
+
+  snapshotDate    DateTime @map("snapshot_date") @db.Date
+
+  @@unique([cardId, snapshotDate])
+  @@index([game, snapshotDate], map: "idx_weight_history_game_date")
+  @@index([cardId, snapshotDate], map: "idx_weight_history_card_date")
+  @@map("index_weight_history")
+}

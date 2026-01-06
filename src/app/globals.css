@@ -1,0 +1,172 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --prism-bg: #0a0a0f;
+  --prism-bg-secondary: #12121a;
+  --prism-bg-tertiary: #1a1a24;
+  --prism-border: #2a2a3a;
+  --prism-text: #e0e0e8;
+  --prism-text-muted: #8a8a9a;
+  --prism-accent: #6366f1;
+  --prism-accent-hover: #818cf8;
+  --prism-success: #10b981;
+  --prism-warning: #f59e0b;
+  --prism-danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: var(--prism-bg);
+  color: var(--prism-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--prism-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--prism-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--prism-text-muted);
+}
+
+/* Selection styling */
+::selection {
+  background: var(--prism-accent);
+  color: white;
+}
+
+/* Link styling */
+a {
+  color: var(--prism-accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--prism-accent-hover);
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--prism-border);
+}
+
+th {
+  font-weight: 600;
+  color: var(--prism-text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Utility classes */
+.text-positive {
+  color: var(--prism-success);
+}
+
+.text-negative {
+  color: var(--prism-danger);
+}
+
+.text-neutral {
+  color: var(--prism-text-muted);
+}
+
+.bg-positive {
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.bg-negative {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Card component base */
+.card {
+  @apply bg-prism-bg-secondary rounded-lg border border-prism-border p-4;
+}
+
+.card-header {
+  @apply flex items-center justify-between mb-4 pb-3 border-b border-prism-border;
+}
+
+.card-title {
+  @apply text-lg font-semibold text-prism-text;
+}
+
+/* Button components */
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-all duration-200;
+}
+
+.btn-primary {
+  @apply bg-prism-accent text-white hover:bg-prism-accent-hover;
+}
+
+.btn-secondary {
+  @apply bg-prism-bg-tertiary text-prism-text border border-prism-border hover:border-prism-accent;
+}
+
+.btn-ghost {
+  @apply bg-transparent text-prism-text-muted hover:text-prism-text hover:bg-prism-bg-tertiary;
+}
+
+/* Input components */
+.input {
+  @apply w-full px-3 py-2 bg-prism-bg-tertiary border border-prism-border rounded-md text-prism-text placeholder:text-prism-text-muted focus:outline-none focus:border-prism-accent transition-colors duration-200;
+}
+
+/* Badge components */
+.badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-prism-success/20 text-prism-success;
+}
+
+.badge-warning {
+  @apply bg-prism-warning/20 text-prism-warning;
+}
+
+.badge-danger {
+  @apply bg-prism-danger/20 text-prism-danger;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply w-5 h-5 border-2 border-prism-border border-t-prism-accent rounded-full animate-spin;
+}
+
+/* Skeleton loading */
+.skeleton {
+  @apply bg-prism-bg-tertiary animate-pulse rounded;
+}
