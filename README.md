@@ -74,6 +74,9 @@ the exact pinned commit with credentials disabled.
 
 The focused TypeScript config deliberately excludes the dormant legacy app,
 whose pre-existing Prisma generation and type debt are outside this slice.
+The legacy app's root TypeScript config reciprocally excludes the private
+contract/engine directories, so a dormant Next build cannot silently absorb or
+transpile the trade-secret module into its application bundle.
 
 ## Dormant legacy prototype — historical reference only
 
