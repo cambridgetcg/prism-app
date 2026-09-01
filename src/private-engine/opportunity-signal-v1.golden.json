@@ -1,0 +1,28 @@
+{
+  "evidence": {
+    "canonical_bytes": 2196,
+    "digest": "sha256:23646a4e942e7aefa9012cc90860244628af84096794bd1082c6fea13088c3c2"
+  },
+  "request": {
+    "canonical_bytes": 2586,
+    "digest": "sha256:49a71594cd5777c3525b5c0b09c07051ce6ce1ef51882867649481e0e71a3be6"
+  },
+  "expected_provider_result": {
+    "schema": "cambridgetcg.opportunity-signal-provider-result/1",
+    "candidate_ref": "ctcg_cand_AbCdEfGhIjKlMnOpQrStUv",
+    "evaluated_at": "2026-09-01T12:00:00.000Z",
+    "request_digest": "sha256:49a71594cd5777c3525b5c0b09c07051ce6ce1ef51882867649481e0e71a3be6",
+    "expires_at": "2026-09-01T12:01:00.000Z",
+    "classification": "potential_deal",
+    "reason_codes": ["private_policy_threshold_met"]
+  },
+  "expected_public_projection": {
+    "classification": "potential_deal",
+    "estimate": {
+      "currency": "GBP",
+      "conservative_net_transaction_spread_band": "500_to_1499_minor",
+      "conservative_margin_band": "2500_to_4999_bps"
+    },
+    "liquidity": "unknown"
+  }
+}

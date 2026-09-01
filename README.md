@@ -1,10 +1,88 @@
-# PRISM - Price Index for TCG Market Intelligence
+# PRISM private opportunity engine bootstrap
 
-Standalone price tracking and market intelligence app for One Piece TCG cards.
+This private repository preserves a dormant January PRISM prototype and now
+contains an isolated, fixture-only opportunity-provider bootstrap. There is no
+verified live PRISM home or deployment.
 
-**Live URL:** https://app.cambridgetcg.com
+> **Runtime status:** the legacy PRISM application remains dormant. The only
+> active development slice in this branch is a pure, fixture-only private
+> opportunity provider. It does not read the legacy database, call a network,
+> load environment variables, expose an API/UI, or schedule work.
 
-## Project Structure
+## Private opportunity provider (fixture only)
+
+`src/private-engine/` is the private counterpart to the public kingdom-109
+`@cambridge-tcg/opportunity-signal` contract. It accepts an already validated
+`cambridgetcg.opportunity-signal-input/1` fixture and returns only the exact
+`cambridgetcg.opportunity-signal-provider-result/1` seam. The public package is
+the sole owner of final `cambridgetcg.opportunity-signal/1` projection and
+redaction.
+
+The current provider is deterministic contract scaffolding, not a live deal
+service or a calibrated model. It uses integer GBP minor units and `BigInt`
+internally. Low spread pairs the low exit with high costs; high spread pairs
+the high exit with low costs. Margin is net transaction spread divided by
+total acquisition outlay, rounded down. Signed margin extrema evaluate every
+net-exit/acquisition endpoint pair so loss and zero-crossing ranges stay
+ordered. Unknown costs, invalid or expired rights, expired evidence,
+incomplete FX, mismatched assets, low confidence, and numeric envelope failures
+fail closed.
+
+Every `not_applicable` cost includes an explicit assertion reason, and native
+GBP includes `all_inputs_native_gbp`. Release eligibility carries an
+`evidence_bundle_digest`; the public package verifies that binding before it
+calls PRISM. PRISM receives a separate full-request SHA-256 digest in frozen
+provider context and echoes it unchanged, preventing a result from being
+replayed against another validated request.
+
+Confidence remains an evidence-quality band, never a probability. Unknown
+liquidity stays unknown for the public projector; PRISM neither upgrades it
+nor adds a liquidity field to its provider result. All three classifications
+carry no economics across the private seam. For a `potential_deal`, the public
+projector independently recomputes transparent conservative economics and may
+publish only coarse spread and margin bands—never PRISM's exact ranges.
+
+Private thresholds live only in `src/private-engine/policy.ts`. Provider output
+never contains the gross-exit input, a fair-value range, source rows, features,
+weights, thresholds, rights digests, or debug data. Its exact seven fields are
+schema, candidate binding, evaluation time, request digest, expiry,
+classification, and reason codes.
+
+The local wire mirror and `src/contracts/opportunity-signal-v1.pin.json` pin all
+four v1 schema strings, public commit
+`629a7ddbc0a55c68f22f509916b2bd86a84367f1`, and package tree
+`333dee9912a51ad95bb4a965b3e3e03a49a35bb8`. A mutable branch or sibling path
+is not a release pin. Private CI checks out that exact public commit into an
+ephemeral location, verifies both Git identities, and runs the real
+parser/projector bridge against the synthetic golden vector without uploading
+artifacts. Replace the mirror with a published immutable package when one
+exists.
+
+Run the isolated checks with:
+
+```bash
+npm run test:private-engine
+npm run typecheck:private-engine
+npm run test:contract-conformance -- /path/to/pinned-public-checkout
+```
+
+The conformance command accepts only a caller-supplied checkout, verifies its
+HEAD and package tree against the JSON pin, and does all cross-repository
+compilation in a disposable OS temporary directory. It performs no clone,
+fetch, commit, push, or artifact upload itself. CI supplies a fresh checkout of
+the exact pinned commit with credentials disabled.
+
+The focused TypeScript config deliberately excludes the dormant legacy app,
+whose pre-existing Prisma generation and type debt are outside this slice.
+
+## Dormant legacy prototype — historical reference only
+
+Everything below this heading describes the archived January application
+source and its old setup/deployment instructions. It is retained for context;
+it is not a current service inventory, runbook, deployment claim, or authority
+to activate the old database, APIs, UI, or cron jobs.
+
+### Historical project structure
 
 ```
 prism-app/
@@ -33,7 +111,7 @@ prism-app/
 └── tsconfig.json
 ```
 
-## API Endpoints
+### Historical API endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -46,16 +124,16 @@ prism-app/
 | `/api/crystal` | GET | Crystal visualization data |
 | `/api/health` | GET | Health check |
 
-## Setup
+### Historical setup
 
-### 1. Install Dependencies
+#### 1. Install dependencies
 
 ```bash
 cd prism-app
 npm install
 ```
 
-### 2. Configure Environment Variables
+#### 2. Configure environment variables
 
 Copy `.env.example` to `.env` and fill in the values:
 
@@ -67,13 +145,13 @@ Required variables:
 - `DATABASE_URL` - PostgreSQL connection string (same as CardForum)
 - `CRON_SECRET` - Secret for authenticating cron jobs
 
-### 3. Generate Prisma Client
+#### 3. Generate Prisma Client
 
 ```bash
 npx prisma generate
 ```
 
-### 4. Run Development Server
+#### 4. Run development server
 
 ```bash
 npm run dev
@@ -81,9 +159,9 @@ npm run dev
 
 Visit http://localhost:3000
 
-## Deployment
+### Historical deployment notes
 
-### Deploy to Vercel
+#### Deploy to Vercel
 
 1. **Connect Repository**
    ```bash
@@ -100,11 +178,11 @@ Visit http://localhost:3000
    vercel --prod
    ```
 
-## DNS Configuration Guide
+### Historical DNS configuration guide
 
 To set up `app.cambridgetcg.com` subdomain:
 
-### Option A: Using Vercel Domains (Recommended)
+#### Option A: Using Vercel Domains
 
 1. **In Vercel Dashboard:**
    - Go to your project → Settings → Domains
@@ -132,7 +210,7 @@ To set up `app.cambridgetcg.com` subdomain:
    - Wait for DNS propagation (up to 48 hours, usually minutes)
    - Vercel will automatically provision SSL
 
-### Option B: Using Cloudflare Proxy
+#### Option B: Using Cloudflare Proxy
 
 If using Cloudflare with proxy enabled:
 
@@ -152,7 +230,7 @@ If using Cloudflare with proxy enabled:
    - Add the domain `app.cambridgetcg.com`
    - It will show as pending until DNS propagates
 
-### Verify DNS Setup
+#### Verify DNS setup
 
 ```bash
 # Check DNS resolution
@@ -164,7 +242,7 @@ nslookup app.cambridgetcg.com
 
 Expected result: Should resolve to Vercel's IP or CNAME.
 
-### Troubleshooting DNS
+#### Troubleshooting DNS
 
 1. **DNS not propagating:**
    - Clear local DNS cache: `sudo dscacheutil -flushcache` (macOS)
@@ -178,7 +256,7 @@ Expected result: Should resolve to Vercel's IP or CNAME.
    - Verify the domain is added in Vercel project settings
    - Check Vercel deployment logs
 
-## Cron Jobs
+### Historical cron jobs
 
 The app runs three cron jobs (configured in `vercel.json`):
 
@@ -190,7 +268,7 @@ The app runs three cron jobs (configured in `vercel.json`):
 
 Cron jobs are protected by `CRON_SECRET` environment variable.
 
-## Database Access
+### Historical database-access notes
 
 This app uses **read-only** access to the shared CardForum database. The trading-card-pricer Lambda handles price updates twice daily.
 
@@ -207,7 +285,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO prism_readon
 
 Then use this user in `DATABASE_URL` for production.
 
-## Tech Stack
+### Historical tech stack
 
 - **Framework:** Next.js 14 (App Router)
 - **Database:** PostgreSQL via Prisma ORM

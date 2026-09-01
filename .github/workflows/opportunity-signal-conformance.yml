@@ -1,0 +1,60 @@
+name: Opportunity Signal contract conformance
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/opportunity-signal-conformance.yml"
+      - "scripts/check-public-contract-conformance.mjs"
+      - "src/contracts/**"
+      - "src/private-engine/**"
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [master]
+    paths:
+      - ".github/workflows/opportunity-signal-conformance.yml"
+      - "scripts/check-public-contract-conformance.mjs"
+      - "src/contracts/**"
+      - "src/private-engine/**"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out private PRISM
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 20.19.5
+          cache: npm
+
+      - name: Install private test dependencies without app activation
+        run: npm ci --ignore-scripts
+
+      - name: Typecheck the isolated private provider
+        run: npm run typecheck:private-engine
+
+      - name: Run offline private provider regressions
+        run: npm run test:private-engine
+
+      - name: Check out immutable public contract
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: cambridgetcg/Cambridge-TCG-monorepo
+          ref: 629a7ddbc0a55c68f22f509916b2bd86a84367f1
+          path: .contract-public
+          persist-credentials: false
+
+      - name: Verify pinned parser and projector conformance
+        run: npm run test:contract-conformance -- .contract-public

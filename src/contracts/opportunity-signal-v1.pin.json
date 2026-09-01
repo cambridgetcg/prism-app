@@ -1,0 +1,12 @@
+{
+  "repository": "https://github.com/cambridgetcg/Cambridge-TCG-monorepo.git",
+  "commit": "629a7ddbc0a55c68f22f509916b2bd86a84367f1",
+  "package_path": "packages/opportunity-signal",
+  "package_tree": "333dee9912a51ad95bb4a965b3e3e03a49a35bb8",
+  "schemas": {
+    "input": "cambridgetcg.opportunity-signal-input/1",
+    "evidence": "cambridgetcg.opportunity-signal-evidence/1",
+    "provider_result": "cambridgetcg.opportunity-signal-provider-result/1",
+    "public_output": "cambridgetcg.opportunity-signal/1"
+  }
+}
