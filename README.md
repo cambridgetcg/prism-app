@@ -38,7 +38,9 @@ replayed against another validated request.
 Confidence remains an evidence-quality band, never a probability. Unknown
 liquidity stays unknown for the public projector; PRISM neither upgrades it
 nor adds a liquidity field to its provider result. All three classifications
-carry no economics across the private seam. For a `potential_deal`, the public
+carry no economics across the private seam. Every projected result retains the
+three inherent non-executing risks, and the pinned standalone public parser
+rejects an output if any one is removed. For a `potential_deal`, the public
 projector independently recomputes transparent conservative economics and may
 publish only coarse spread and margin bands—never PRISM's exact ranges.
 
@@ -50,8 +52,8 @@ classification, and reason codes.
 
 The local wire mirror and `src/contracts/opportunity-signal-v1.pin.json` pin all
 four v1 schema strings, public commit
-`629a7ddbc0a55c68f22f509916b2bd86a84367f1`, and package tree
-`333dee9912a51ad95bb4a965b3e3e03a49a35bb8`. A mutable branch or sibling path
+`042aa9085150d5ad3e80a3bf3595439b24bf81f7`, and package tree
+`cb287cf64c70454035b535e2ff088a779dc16c62`. A mutable branch or sibling path
 is not a release pin. Private CI checks out that exact public commit into an
 ephemeral location, verifies both Git identities, and runs the real
 parser/projector bridge against the synthetic golden vector without uploading

@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: cambridgetcg/Cambridge-TCG-monorepo
-          ref: 629a7ddbc0a55c68f22f509916b2bd86a84367f1
+          ref: 042aa9085150d5ad3e80a3bf3595439b24bf81f7
           path: .contract-public
           persist-credentials: false
 

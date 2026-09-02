@@ -5,8 +5,8 @@
  * https://github.com/cambridgetcg/Cambridge-TCG-monorepo.git
  *
  * Package path: packages/opportunity-signal
- * Source commit: 629a7ddbc0a55c68f22f509916b2bd86a84367f1
- * Package tree: 333dee9912a51ad95bb4a965b3e3e03a49a35bb8
+ * Source commit: 042aa9085150d5ad3e80a3bf3595439b24bf81f7
+ * Package tree: cb287cf64c70454035b535e2ff088a779dc16c62
  * Mission: kingdom-109
  *
  * The immutable source and package tree above plus the schema identifiers

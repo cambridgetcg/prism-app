@@ -109,6 +109,7 @@ import {
   parseOpportunitySignalEvidenceEnvelopeV1,
   parseOpportunitySignalInputV1,
   parseOpportunitySignalProviderResultV1,
+  parseOpportunitySignalV1,
   projectOpportunitySignalV1,
 } from "./public/src/index";
 import {
@@ -176,6 +177,23 @@ async function main(): Promise<void> {
       liquidity: output.liquidity,
     },
     golden.expected_public_projection,
+  );
+  assert.ok(output.risk_codes.includes("availability_not_reserved"));
+  const missingInherentRisk = {
+    ...output,
+    risk_codes: output.risk_codes.filter(
+      (risk) => risk !== "availability_not_reserved",
+    ),
+  };
+  assert.throws(
+    () => parseOpportunitySignalV1(missingInherentRisk),
+    (error: unknown) =>
+      error instanceof OpportunitySignalContractError &&
+      error.phase === "output" &&
+      error.issues.some(
+        (issue) =>
+          issue.path === "$.risk_codes" && issue.code === "unsafe_claim",
+      ),
   );
 
   let providerCalls = 0;
